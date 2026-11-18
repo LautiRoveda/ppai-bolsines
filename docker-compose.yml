@@ -1,0 +1,17 @@
+# OPCIONAL: levanta PostgreSQL con Docker, ya con la base "bolsines" creada
+# y el usuario/clave que espera application.properties (postgres / postgres).
+#   docker compose up -d      -> arranca
+#   docker compose down       -> lo detiene (los datos se conservan en el volumen)
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: bolsines
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - bolsines_datos:/var/lib/postgresql/data
+volumes:
+  bolsines_datos:
