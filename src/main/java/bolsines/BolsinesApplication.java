@@ -33,6 +33,12 @@ public class BolsinesApplication {
         System.out.println("PPAI Bolsines listo. Abrir en el navegador: http://localhost:8080");
     }
 
+    /** En un servidor los datos de conexion llegan por variable de entorno; si no hay, vale application.properties. */
+    private static String configurado(String variableDeEntorno, String valorDelArchivo) {
+        String valor = System.getenv(variableDeEntorno);
+        return valor == null || valor.isBlank() ? valorDelArchivo : valor;
+    }
+
     /** Si el programa no puede arrancar, deja al final de la consola la causa en limpio. */
     private static void avisarQueNoArranco(RuntimeException error) {
         Throwable causa = error;
@@ -46,9 +52,11 @@ public class BolsinesApplication {
         try (InputStream archivo = BolsinesApplication.class.getResourceAsStream("/application.properties")) {
             Properties configuracion = new Properties();
             configuracion.load(archivo);
-            DriverManager.getConnection(configuracion.getProperty("spring.datasource.url"),
-                    configuracion.getProperty("spring.datasource.username"),
-                    configuracion.getProperty("spring.datasource.password")).close();
+            DriverManager.getConnection(
+                    configurado("SPRING_DATASOURCE_URL", configuracion.getProperty("spring.datasource.url")),
+                    configurado("SPRING_DATASOURCE_USERNAME", configuracion.getProperty("spring.datasource.username")),
+                    configurado("SPRING_DATASOURCE_PASSWORD", configuracion.getProperty("spring.datasource.password")))
+                    .close();
         } catch (SQLException errorDeConexion) {
             motivo = "no se pudo conectar a PostgreSQL: " + errorDeConexion.getMessage();
         } catch (IOException | RuntimeException noSePudoProbar) {

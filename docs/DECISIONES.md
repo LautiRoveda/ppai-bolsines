@@ -199,3 +199,9 @@ Usuario logueado al empezar: **Ana Pérez**, CM Rosario. Segundo usuario, para A
 | 110 | 4500 | Córdoba → CMC | Enviado | remito 311 (9060, 9061), remito 312 (9062) | A5 (lo ve Elena Sosa) |
 
 Toda la documentación de los bolsines enviados está en `EnBolsinEnviado` con el historial completo: Registrada → EnRemito → EnBolsinSaliente → EnBolsinEnviado.
+
+## Despliegue en un servidor (fuera del CU 28)
+
+- El repositorio trae un `Dockerfile` para publicar el programa en un servidor (Easypanel). No cambia nada del programa: en la PC y en la facultad se sigue corriendo con `mvnw spring-boot:run`.
+- En el servidor la conexión a PostgreSQL se pasa por variables de entorno estándar de Spring Boot (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`), que pisan lo que dice `application.properties`.
+- `ClaveDeAcceso` (paquete `demo`) pide usuario y clave en el navegador solo si existe la variable `BOLSINES_CLAVE`. Está porque el programa no tiene login (no es parte del CU 28) y las páginas de demo permiten reiniciar la base. Sin esa variable no hace nada.

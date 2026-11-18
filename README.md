@@ -132,3 +132,18 @@ Están todos en `docs/DECISIONES.md`. Los principales:
 | `Port 8080 was already in use` | Quedó otra copia del programa abierta (cerrar esa terminal), o cambiar `server.port` en `application.properties`. |
 | `mvnw.cmd` no se reconoce (PowerShell) | Falta el `.\` adelante: `.\mvnw.cmd spring-boot:run`. |
 | No baja las dependencias | La primera corrida necesita internet. Después se puede arrancar sin red con `.\mvnw.cmd -o spring-boot:run`. |
+
+## Publicarlo en un servidor (opcional, Easypanel)
+
+No hace falta para la defensa. El `Dockerfile` de la raíz arma la imagen; el servidor necesita además un PostgreSQL con una base `bolsines` vacía (las tablas y los datos de demo se crean solos al arrancar).
+
+Variables de entorno del servicio:
+
+| Variable | Valor |
+| --- | --- |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://HOST:5432/bolsines` (HOST = nombre interno del servicio de PostgreSQL) |
+| `SPRING_DATASOURCE_USERNAME` | usuario de PostgreSQL |
+| `SPRING_DATASOURCE_PASSWORD` | clave de PostgreSQL |
+| `BOLSINES_CLAVE` | clave para entrar al sitio (usuario: `grupo10`). Si no se define, el sitio queda abierto. |
+
+El programa escucha en el puerto 8080.
