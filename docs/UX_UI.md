@@ -7,31 +7,22 @@ La consigna de la entrega 2 pide dos cosas, y las dos se califican en la defensa
 1. Defender el **diseño de experiencia de usuario** que salió de las actividades de descubrimiento hechas en el aula (MoodBoard, mapa de empatía y user journey).
 2. El **diseño de las interfaces de usuario considerando patrones para el diseño de GUI**.
 
-Este documento cubre el punto 2 completo y deja preparado el punto 1 para completarlo con el material del grupo.
+Este documento cubre el punto 2 completo. El punto 1 está en `docs/UX_Bolsines_G10.pdf`.
 
-## 1. Experiencia de usuario: lo que hay que traer del aula
+## 1. Experiencia de usuario: MoodBoard, mapa de empatía y user journey
 
-> **Esta parte la tiene que completar el grupo.** Son los tres afiches que hicieron en clase. La consigna pedía sacarles una foto "para tener el registro en el momento de la presentación". Sin esas fotos este punto no se puede defender.
+Los tres entregables están en **`docs/UX_Bolsines_G10.pdf`** (4 páginas, para proyectar o imprimir):
 
-| Entregable del aula | Qué era | Qué llevar a la defensa |
-| --- | --- | --- |
-| MoodBoard | Afiche con la problemática de los actores, un elemento asociado al sistema y un slogan, logo o referencia | La foto del afiche |
-| Mapa de empatía | De una Persona vinculada al actor Encargado de Bolsines (EB) | La foto del afiche y el nombre de la Persona |
-| User Journey | El viaje de esa Persona: antes, durante y después de usar el sistema | La foto del afiche |
+| Página | Contenido |
+| --- | --- |
+| 1 | **MoodBoard**: nombre, logo, lema, colores, problema que resuelve, elementos del sistema (bolsín, precinto, remito, comisión médica) y palabras guía. |
+| 2 | **Mapa de empatía** de Ana Pérez, Encargada de Bolsines de la CM Rosario (la Persona vinculada al actor EB): qué piensa y siente, ve, oye, dice y hace, esfuerzos y resultados. |
+| 3 | **User Journey** de Ana: antes, durante y después de usar el sistema, en 8 momentos, con su ánimo, los puntos de dolor y qué hace el sistema en cada uno. |
+| 4 | **Del descubrimiento a la pantalla**: cada hallazgo, la decisión de interfaz que provocó y el patrón de GUI que aplica. |
 
-### Cómo conectar ese material con la pantalla
+Es una **versión digital** armada para la defensa, no la foto de los afiches del aula. Si alguien del grupo tiene los afiches originales, mandan los originales y este PDF se ajusta a lo que digan.
 
-Completar la columna del medio con lo que dice **su** afiche. La columna de la derecha ya está: es lo que la pantalla hace hoy.
-
-| Del material del aula | Lo que dice el afiche del grupo | Cómo responde la pantalla |
-| --- | --- | --- |
-| MoodBoard: slogan o logo | *(completar)* | El nombre y el lema del encabezado. Hoy dice "Cada documento, en su destino", que es un **texto provisorio**: hay que cambiarlo por el del afiche (ver sección 3). |
-| MoodBoard: colores y clima | *(completar)* | La paleta de colores de toda la aplicación (ver sección 3). |
-| Mapa de empatía: qué le duele o le preocupa al EB | *(completar)* | Se le muestra solo lo que le llegó a su comisión médica, identificado por el precinto que tiene en la mano; antes de registrar ve un resumen y tiene que confirmar. |
-| Mapa de empatía: qué necesita o qué gana | *(completar)* | Cuatro pasos cortos con indicador de avance; mensaje claro de que la recepción quedó registrada y de que se avisó a la CM origen. |
-| Journey, "antes" (llega el bolsín físico) | *(completar)* | El listado con filtro por número de precinto o por CM origen. |
-| Journey, "durante" (abre el bolsín y controla contra los remitos) | *(completar)* | La tabla con cada remito y su documentación, con una casilla por fila para marcar lo que no llegó, lo que no corresponde o lo que hay que redirigir. |
-| Journey, "después" (la documentación sigue su camino) | *(completar)* | La notificación a la CM origen y el historial con responsable, fecha y hora (trazabilidad). |
+El nombre, el lema y los colores del MoodBoard son los mismos que usa la aplicación (sección 3), y Ana Pérez es el usuario con el que arranca la demo.
 
 ## 2. Patrones de diseño de GUI aplicados
 
@@ -72,7 +63,7 @@ Todo está junto al principio de `src/main/java/bolsines/pantalla/Plantilla.java
 | Qué | Línea | Valor actual |
 | --- | --- | --- |
 | Nombre del sistema | 14 | Bolsines |
-| Lema | 15 | "Cada documento, en su destino" (provisorio: poner el del MoodBoard) |
+| Lema | 15 | "Cada documento, en su destino" (el del MoodBoard) |
 | Color principal | 19 | azul `#1f4e79` |
 | Resto de la paleta | 18 en adelante | fondo, texto, bordes y colores de mensajes |
 
