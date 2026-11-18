@@ -9,6 +9,10 @@ Grupo 10 · 3K3 · Defensa: viernes 20-11-26.
 3. Abrir `http://localhost:8080` y tocar **Reiniciar datos de demo**.
 4. Elegir siempre el bolsín por su **número de precinto**: el listado se achica a medida que se reciben.
 
+**Plan B si la notebook falla:** la misma aplicación está publicada en `https://bolsines.test-ia.cloud` (usuario `grupo10`, la clave la tiene Lautaro). Necesita internet y ahí no se ve la terminal con la notificación del CU 29. El código se muestra igual desde la notebook o desde GitHub.
+
+**Orden sugerido (el aviso de la cátedra dice que se presenta el modelo de diseño y la implementación):** primero el modelo entregado (`PPAI2026_3K3_G10_E2_Diseño.pdf`: diagrama de clases con el State y la vista dinámica), después la demo (secciones 1 a 6) y al final el código (sección 7), señalando en cada paso a qué parte del diagrama corresponde.
+
 ## 1. Flujo básico (bolsín con precinto 4471)
 
 1. **Registrar recepción de bolsín.** Se ve la CM del usuario (CM Rosario) y tres bolsines enviados.
@@ -30,7 +34,8 @@ Grupo 10 · 3K3 · Defensa: viernes 20-11-26.
 
 1. **Registrar recepción de bolsín**. En "N° de precinto" escribir `9999` → **Filtrar**. Aparece "No se encuentra bolsín con el número de precinto ingresado" (A1).
 2. **Ver todos**. En "CM origen" escribir `Tucumán` → **Filtrar**. Aparece "No se encuentra bolsín con la CM de origen ingresada" (A2).
-3. **Ver todos**, escribir `4472` en el precinto → **Filtrar**: queda solo ese bolsín. Seguir con el punto siguiente.
+3. **Ver todos**. En el precinto escribir `44a1` → **Filtrar**: avisa que el precinto tiene que ser un número y no filtra (validación del dato, decisión del grupo).
+4. **Ver todos**, escribir `4472` en el precinto → **Filtrar**: queda solo ese bolsín. Seguir con el punto siguiente.
 
 ## 3. Alternativo A3: no se recibe toda la documentación (precinto 4472)
 
@@ -84,12 +89,12 @@ Para mostrar que la transición inválida falla sola: correr `.\mvnw.cmd test` y
 
 Si lo quieren mostrar en vivo: **antes** de entrar a "Registrar recepción de bolsín", ejecutar en PostgreSQL `UPDATE documentacion SET estado_actual = 'Registrada' WHERE id = 9002;` y después recibir el bolsín 4471 con la opción 1. Aparece "La documentación no puede aceptarse en este estado" y no se guarda nada. Si el `UPDATE` se hace con el listado ya abierto no se detecta, porque el gestor ya leyó los datos. Al terminar, **Reiniciar datos de demo**.
 
-## 8. Diseño de experiencia de usuario y de interfaz
+## 8. Diseño de experiencia de usuario y de interfaz (respaldo)
 
-También se califica en la defensa. Está todo en `docs/UX_UI.md`:
+El aviso de los docentes dice que esta entrega **no incluye** diseño de experiencia de usuario, así que no hay que presentarlo. Queda preparado por si preguntan:
 
-- **Llevar `docs/UX_Bolsines_G10.pdf`** (MoodBoard, mapa de empatía y user journey) y poder contar cómo se conecta cada cosa con la pantalla: la página 4 del PDF es el resumen para eso.
-- **Patrones de GUI aplicados**: asistente con indicador de pasos, lista con filtro, estado vacío, acción principal destacada, salida siempre disponible, resumen antes de confirmar, confirmación de acción irreversible y mensajes de retroalimentación. La tabla de `UX_UI.md` dice dónde se ve cada uno.
+- **`docs/UX_Bolsines_G10.pdf`** (MoodBoard, mapa de empatía y user journey) y poder contar cómo se conecta cada cosa con la pantalla: la página 4 del PDF es el resumen para eso.
+- **Patrones de GUI aplicados** (`docs/UX_UI.md`): asistente con indicador de pasos, lista con filtro, estado vacío, acción principal destacada, salida siempre disponible, resumen antes de confirmar, confirmación de acción irreversible y mensajes de retroalimentación. La tabla de `UX_UI.md` dice dónde se ve cada uno.
 
 ## Preguntas probables
 
