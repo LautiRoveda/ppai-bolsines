@@ -88,7 +88,7 @@ Si lo quieren mostrar en vivo: **antes** de entrar a "Registrar recepción de bo
 
 También se califica en la defensa. Está todo en `docs/UX_UI.md`:
 
-- **Llevar las fotos de los tres afiches del aula** (MoodBoard, mapa de empatía y user journey) y poder contar cómo se conectan con la pantalla.
+- **Llevar `docs/UX_Bolsines_G10.pdf`** (MoodBoard, mapa de empatía y user journey) y poder contar cómo se conecta cada cosa con la pantalla: la página 4 del PDF es el resumen para eso.
 - **Patrones de GUI aplicados**: asistente con indicador de pasos, lista con filtro, estado vacío, acción principal destacada, salida siempre disponible, resumen antes de confirmar, confirmación de acción irreversible y mensajes de retroalimentación. La tabla de `UX_UI.md` dice dónde se ve cada uno.
 
 ## Preguntas probables
