@@ -101,7 +101,7 @@ El aviso de los docentes dice que esta entrega **no incluye** diseño de experie
 | Pregunta | Respuesta |
 | --- | --- |
 | ¿Por qué clase abstracta y no interfaz? | Tiene comportamiento por defecto (la excepción), atributos comunes (`nombre`, `descripcion`) y un método compartido (`buscarCEActual`). |
-| ¿Por qué State solo en Documentación? | Tiene 9 estados y 17 transiciones repartidas en 9 casos de uso. Bolsín y Remito tienen pocos estados y siguen con la entidad `Estado`. |
+| ¿Por qué State solo en Documentación? | Tiene 9 estados y 17 transiciones. Bolsín y Remito tienen pocos estados y siguen con la entidad `Estado`. |
 | ¿Dónde está la tabla de estados de documentación? | No hay: se guarda el nombre en una columna de texto y `EstadoDocumentacionConverter` crea el objeto al leer. |
 | ¿Por qué en los alternativos el gestor recorre los remitos? | La vista dinámica modela el flujo básico. Los alternativos usan las operaciones públicas de `Documentacion` del diagrama de clases. |
 | ¿Qué pasa si falla algo a mitad de la confirmación? | Los cambios se hacen en los objetos y se guardan todos juntos al final, dentro de una transacción (`@Transactional`). Si falla antes, no se escribió nada; si falla al escribir, se deshace. |

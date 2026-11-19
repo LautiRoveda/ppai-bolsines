@@ -106,7 +106,7 @@ Todo está en `src/main/java/bolsines/`.
 
 ### 4.2 `dominio/estados/EnBolsinEnviado.java` (el estado concreto que trabaja)
 
-Es el estado en que está la documentación cuando el bolsín ya salió. Es **el único estado con comportamiento** en nuestro caso de uso, porque el CU 28 siempre parte de ahí. Sobrescribe 4 operaciones:
+Es el estado en que está la documentación cuando el bolsín ya salió. Es **el único estado con comportamiento** en nuestra implementación, porque la documentación que llega en un bolsín está en ese estado. Sobrescribe 4 operaciones:
 
 | Operación | Estado al que pasa | Cuándo |
 | --- | --- | --- |
@@ -121,7 +121,9 @@ Las otras 7 operaciones las hereda con la excepción.
 
 `Registrada`, `EnRemito`, `EnBolsinSaliente`, `RecibidoYAceptado`, `RecibidoYRechazado`, `NoRecibida`, `ParaRedirigir`, `DeBaja`. Son clases con solo el constructor: no sobrescriben nada, así que heredan la excepción en todo.
 
-**Por qué están vacíos:** su comportamiento corresponde a otros casos de uso (armar remito, armar bolsín, enviar), que no nos tocó implementar. Están porque el diseño los tiene y porque la base de datos guarda documentación en esos estados. Cuando se implementen esos CU, se completa cada clase sin tocar las demás.
+**Por qué están vacíos:** cuatro son estados de **llegada** del CU 28 (`RecibidoYAceptado`, `RecibidoYRechazado`, `NoRecibida`, `ParaRedirigir`): la documentación termina ahí, y lo que se puede hacer después es de otros casos de uso. Los otros cuatro (`Registrada`, `EnRemito`, `EnBolsinSaliente`, `DeBaja`) pertenecen a casos de uso que no nos tocó implementar (armar remito, armar bolsín, enviar, dar de baja). Cuando se implementen, se completa cada clase sin tocar las demás.
+
+**Ojo con `ParaRedirigir`:** la máquina de estados le da dos transiciones dentro del CU 28 (aceptar y rechazar, que es cuando la CMC revisa lo que redirigió). El diagrama de clases y la secuencia de diseño no las desarrollan, y nosotros implementamos lo que está en esos dos diagramas. Si lo preguntan, la respuesta es esa: es una limitación conocida, está anotada en `DECISIONES.md`, y completarla es sobrescribir dos operaciones en esa clase.
 
 ### 4.4 `dominio/Documentacion.java` (contexto)
 
@@ -252,9 +254,9 @@ Nadie escribió un `if` para ese caso. Lo demuestra el test `aceptarDesdeRegistr
 
 ## 8. Por qué Bolsín y Remito no usan State
 
-El diseño aplica State **solo a Documentación**, porque es la que tiene muchos estados y muchas transiciones (9 estados, 17 transiciones repartidas en 9 casos de uso). Bolsín y Remito tienen pocos estados y siguen como en el análisis:
+El diseño aplica State **solo a Documentación**, porque es la que tiene muchos estados y muchas transiciones (9 estados y 17 transiciones). Bolsín y Remito tienen pocos estados y siguen como en el análisis:
 
-- Hay una entidad **`Estado`** (tabla `estado`) con nombre y ámbito ("Bolsín", "Remito").
+- Hay una entidad **`Estado`** (tabla `estado`) con nombre y ámbito ("Bolsin", "Remito").
 - El **gestor busca** el estado que necesita recorriendo los `Estado` y preguntándoles `sosAmbitoBolsin()`, `esRecibidoCmDestino()`, etc.
 - El **bolsín** tiene historial (`CambioEstadoBolsin`): cierra el actual y crea uno nuevo con `actualizarRecibido(fechaHora, estado, empleado)`.
 - El **remito** guarda solo su estado actual.
@@ -342,13 +344,13 @@ Qué significa cada anotación que se ve en el código:
 Hay que saberlo para no quedar descolocados si lo señalan. Está todo en `DECISIONES.md`.
 
 - **Alternativas A3, A4 y A5 en el gestor.** La vista dinámica solo modela el flujo básico. Agregamos `tomarSeleccionDocumentacion()` y el atributo `documentacionSeleccionada`, y el gestor usa las operaciones públicas de `Documentacion`, que sí están en el diagrama de clases.
-- **Getters de asociación** (`getRemito()`, `getDetalleRemito()`, `getDocumentacion()`): los necesita el gestor para recorrer en las alternativas.
+- **Getters de asociación** (`getRemito()`, `getDetalleRemito()`, `getDocumentacion()`): los necesita el gestor para recorrer remitos y detalles. La pantalla le pasa al gestor lo marcado siempre que se elige una opción, también en el flujo básico (con la lista vacía).
 - **`esCMC()` en `ComisionMedica`**: para la regla de A5.
 - **Remito en "Recibido y Aceptado Parcial"** cuando tiene documentación marcada. La ERS lo define para A3; para A4 y A5 es un supuesto nuestro.
 - **`crearProximoEstado()` solo devuelve `RecibidoYAceptado`** (así está en el diseño, sin parámetros). En las alternativas el estado destino se crea con `new` directo.
 - **CU 29 simulado**: la notificación a la CM de origen se escribe en la consola, no manda un mail.
 - **Sesión simulada**: no hay pantalla de login; el usuario activo sale de la tabla `sesion`.
-- **Validaciones del filtro** (precinto solo números, CM de origen solo letras): decisión nuestra.
+- **Validaciones del filtro** (precinto solo números; CM de origen solo letras, espacios y puntos): decisión nuestra.
 - **Columnas técnicas**: `bolsin.version` y los `id` de cada tabla.
 - **Herramientas de demo** (reiniciar datos, cambiar usuario, ver la base): no son parte del caso de uso.
 
@@ -411,7 +413,10 @@ Porque el estado no guarda datos de una documentación en particular. Recibe `do
 Pertenecen a otros casos de uso. Están en el diseño y en los datos; se completan cuando se implementen esos CU.
 
 **¿Cómo se relaciona con el diagrama de secuencia?**
-El gestor tiene los mismos métodos y en el mismo orden. La tabla `TABLA_MODELO_CODIGO.md` relaciona cada mensaje del diagrama con su línea de código.
+El gestor tiene los mismos métodos y en el mismo orden. `TABLA_MODELO_CODIGO.md` dice en qué archivo y línea está cada atributo y método de los diagramas. Hay dos diferencias con la secuencia de análisis, anotadas en `DECISIONES.md`: el nombre de la CM del empleado lo pide el gestor (en el análisis lo pide el empleado), y la pantalla le pasa al gestor la documentación marcada antes de la opción.
+
+**¿Y la documentación que está en ParaRedirigir?**
+La máquina de estados le da dos transiciones en el CU 28. El diagrama de clases y la secuencia de diseño solo desarrollan `EnBolsinEnviado`, y eso es lo que implementamos. Completarlo es sobrescribir `aceptarDocumentacion` y `rechazarDocumentacion` en `ParaRedirigir`.
 
 **¿Qué es el método enganche?**
 `registrarCambioEstadoDocumentacion()` del gestor: el punto donde el caso de uso se conecta con el patrón.

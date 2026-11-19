@@ -75,7 +75,7 @@ En `Pantalla.confirmacionSeleccion()`, si el EB elige "No confirmar" no se llama
 ### A1 y A2: el filtro no encuentra el bolsín
 
 - El paso 4 de la ERS dice que el bolsín se elige "por listado o filtrando por alguno de estos datos". El listado tiene un filtro por número de precinto (coincidencia exacta) y por CM origen (alcanza con una parte del nombre).
-- Validaciones del filtro: el precinto tiene que ser solo dígitos (hasta 9) y la CM origen solo letras y espacios (hasta 60 caracteres). Se quitan los espacios de más. Un dato mal escrito muestra un mensaje de error y no se usa para filtrar. Si se cargan los dos datos, tienen que coincidir los dos.
+- Validaciones del filtro: el precinto tiene que ser solo dígitos (hasta 9) y la CM origen solo letras, espacios y puntos (hasta 60 caracteres). Se quitan los espacios de más. Un dato mal escrito muestra un mensaje de error y no se usa para filtrar. Si se cargan los dos datos, tienen que coincidir los dos.
 - Si ningún bolsín coincide, se muestra "No se encuentra bolsín con el número de precinto ingresado" (A1) o "No se encuentra bolsín con la CM de origen ingresada" (A2).
 - **El filtro lo aplica la pantalla** sobre el listado que ya le pasó el gestor (`pasaElFiltro()`). La secuencia de análisis no modela el filtro, así que no hay un mensaje al gestor para esto (supuesto del grupo). Es filtrado de lo que se muestra, no lógica del caso de uso.
 
@@ -99,15 +99,22 @@ La consigna pide el flujo básico y al menos dos alternativos: están los seis (
 | Constructor vacío `protected` en cada entidad | lo exige JPA para reconstruir el objeto | persistencia |
 | Constructor `protected EstadoDocumentacion(nombre, descripcion)` y constructor sin parámetros en cada estado | fijan `nombre` y `descripcion` | — |
 
+| Constructores públicos con parámetros en las entidades (`Bolsin`, `Remito`, `DetalleRemito`, `Documentacion`, `CambioEstadoBolsin`, `Empleado`, `Usuario`, `Sesion`, `Estado`, `ComisionMedica`, `TipoDocumento`) | armar objetos en los tests; el programa los lee de la base. El de `Documentacion` recibe el estado inicial y el historial (el diagrama dibuja `new()` sin parámetros) | — |
+
+Respecto del análisis **no están** `Estado.esAmbitoDocumentacion()`, `Estado.esRecibidaYAceptada()`, `Documentacion.crearCEDocumentacion()` ni el atributo `estadoRecibidaYAceptada` del gestor: los elimina el propio diseño (página 7, "Se elimina").
+
 Respuesta para la defensa: *la vista dinámica modela el flujo básico; los alternativos usan las operaciones públicas de `Documentacion` que están en la vista estática, y el gestor llega a ellas por los getters de las asociaciones, que por convención no se dibujan.*
 
 ### En el gestor y la pantalla
 
-- `Gestor.tomarSeleccionDocumentacion(posiciones)` y el atributo `documentacionSeleccionada` (A3, A4 y A5, ver sección 2).
+- `Gestor.tomarSeleccionDocumentacion(posiciones)` y el atributo `documentacionSeleccionada` (A3, A4 y A5, ver sección 2). **La pantalla lo invoca siempre que el EB elige una opción, también en el flujo básico**: en ese caso le pasa una lista vacía. Por eso, entre `opcionSeleccionada()` y `tomarOpcionSeleccionada()` hay un mensaje pantalla → gestor que la secuencia no tiene, y el gestor recorre `getRemito()` y `getDetalleRemito()` aunque no haya nada marcado.
 - Constantes `OPCION_...` del gestor: los textos de las cuatro opciones del paso 7.
 - `Pantalla.opcionRegistrarRecepcion()`: el paso 1. En la secuencia es un «create» `new()`; ver sección 5.
 - `Pantalla.ver()`, `seleccionarDocumentacion()`, `pasaElFiltro()` y los atributos de apoyo para dibujar la página (`cmOrigenBolsines`, `nroPrecintoBolsines`, `cmOrigenSeleccionado`, `nroPrecintoSeleccionado`, `documentacionMarcada`, `mensajeError`, `filtroPrecinto`, `filtroCmOrigen`, `paso`).
-- Colaboradores inyectados por Spring: en el gestor, la pantalla y los tres repositorios; en la pantalla, el proveedor de gestores.
+- Métodos privados de la pantalla para validar y dibujar: `verPagina()`, `aNumero()`, `requiereMarcarDocumentacion()`, `precintoValido()`, `cmOrigenValida()`, `situacion()` y los que arman el HTML (`html()`, `htmlBolsines()`, `htmlDatosBolsin()`, `htmlOpciones()`, `htmlConfirmacion()`, `htmlFin()`, `htmlCancelado()`).
+- Atributo `gestor` de la pantalla: el gestor de la ejecución en curso.
+- `notificarRegistrarRecepcionCMOrigen()` usa `bolsinSelec.getNroPrecinto()` y `cmEmpleadoLog.getNombre()` para armar el texto de la notificación simulada.
+- Colaboradores inyectados por Spring: en el gestor, la pantalla y los tres repositorios; en la pantalla, el proveedor de gestores. `LOG` es el registro de la consola.
 
 ### Diferencias con la secuencia de análisis
 
@@ -129,7 +136,7 @@ Respuesta para la defensa: *la vista dinámica modela el flujo básico; los alte
 
 - **Cuándo se guarda.** Al final de `actualizarBolsinRecibido()`, antes de la notificación, con un solo `saveAndFlush` del bolsín dentro de la transacción de `tomarConfirmacion()`. Hasta ese momento los cambios están solo en los objetos. Si el EB no confirma (A6), no se toca la base.
 - **CU 29** es un stub: `notificarRegistrarRecepcionCMOrigen()` registra en el log de la consola "notificacion enviada a la CM origen X" (usa el atributo `cmOrigen` del gestor) y la pantalla lo informa. No manda mail. La ERS dice "a cada CM de origen que envió documentación": el detalle de a quiénes y cómo es del CU 29.
-- **`ParaRedirigir` queda vacío.** La máquina de estados le da transiciones (`aceptarDocumentacion`, `rechazarDocumentacion`), pero el diseño solo le pone comportamiento a `EnBolsinEnviado`. Lo que pasa después dentro de la CMC es de otro caso de uso.
+- **`ParaRedirigir` queda vacío.** La máquina de estados (página 3) le da dos transiciones rotuladas con el CU 28: `aceptarDocumentacion()` hacia `RecibidoYAceptado` y `rechazarDocumentacion()` hacia `RecibidoYRechazado`; y el texto del diseño (página 6) dice que la documentación pasa a Recibido y Aceptado si está En Bolsín Enviado "o Para Redirigir". El diagrama de clases de diseño (página 10) y la vista dinámica (página 11) solo le ponen comportamiento a `EnBolsinEnviado`, y `ParaRedirigir` figura únicamente con su `new()`. La implementación sigue esos dos diagramas: en `ParaRedirigir` las dos operaciones heredan la excepción por defecto. Es una limitación conocida respecto de la máquina de estados: el escenario implementado es el de la documentación que llega en el bolsín (En Bolsín Enviado).
 - **Usuario logueado.** No hay pantalla de login: la sesión activa es la fila de la tabla `sesion` con `esta_activa = TRUE`. Al empezar es Ana Pérez (CM Rosario); el botón "Cambiar usuario" del inicio deja activa la de Elena Sosa (CMC), para A5.
 - **Casillas en el paso 6/7** para marcar documentación en A3, A4 y A5: es un agregado de pantalla respecto de la secuencia del flujo básico.
 

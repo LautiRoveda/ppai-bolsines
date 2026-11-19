@@ -64,7 +64,7 @@ G -> G : buscarBolsinesEnviados()
 loop mientras haya bolsines
   G -> B : esTuCM()
   B -> CM : esTuCmDestino()
-  B -> CEB : *sosActual()
+  B -> CEB : ~*sosActual()
   G -> B : sosEnviado()
   B -> ACEB : sosEnviado()
   ACEB -> EST : sosEnviado()
@@ -116,7 +116,7 @@ G -> G : getFechaActual()
 G -> G : registrarCambioEstadoBolsin()
 G -> BS : actualizarRecibido()
 BS -> BS : buscarCEActual()
-BS -> CEB : *sosActual()
+BS -> CEB : ~*sosActual()
 BS -> ACEB : setFechaHoraFin()
 BS -> BS : crearCEBolsin()
 create entity "nuevo:\nCambioEstadoBolsin" as NCEB
@@ -130,47 +130,53 @@ end
 
 == Tramo rediseñado con el patrón State (vista dinámica del diseño) ==
 
-G -> G : registrarCambioEstadoDocumentacion(): void
+G -[#1e7a3c]> G ++ : <color:#1e7a3c>registrarCambioEstadoDocumentacion(): void
 G -[#1e7a3c]> BS : <color:#1e7a3c>aceptarDocumentacion(fechaHoraActual: DateTime, empleadoLog: Empleado): void
 loop mientras haya remitos
   BS -[#1e7a3c]> R : <color:#1e7a3c>aceptarDocumentacion(fechaHora: DateTime,\n<color:#1e7a3c>empleado: Empleado): void
   loop mientras haya detalles de remito
     R -[#1e7a3c]> DR : <color:#1e7a3c>aceptarDocumentacion(fechaHora: DateTime,\n<color:#1e7a3c>empleado: Empleado): void
     DR -[#1e7a3c]> D : <color:#1e7a3c>aceptarDocumentacion(fechaHora: DateTime,\n<color:#1e7a3c>empleado: Empleado): void
-    D -[#1e7a3c]> EA : <color:#1e7a3c>aceptarDocumentacion(this: Documentacion,\n<color:#1e7a3c>fechaHora: DateTime, empleado: Empleado,\n<color:#1e7a3c>cambioEstado: CambioEstadoDocumentacion[]): void
-    note left of D
-      **(2) Delegación:** la Documentación no decide
+    D -[#1e7a3c]> EA ++ : <color:#1e7a3c>aceptarDocumentacion(this: Documentacion,\n<color:#1e7a3c>fechaHora: DateTime, empleado: Empleado,\n<color:#1e7a3c>cambioEstado: CambioEstadoDocumentacion[]): void
+    note right of D
+      (2) Delegación: la Documentación no decide
       la transición, se la pide a su estado actual
       pasándose a sí misma (this) y su colección
       cambioEstado.
     end note
-    EA -[#1e7a3c]> EA : <color:#1e7a3c>buscarCEActual(cambioEstado: CambioEstadoDocumentacion[]):\n<color:#1e7a3c>CambioEstadoDocumentacion
+    EA -[#1e7a3c]> EA ++ : <color:#1e7a3c>buscarCEActual(cambioEstado: CambioEstadoDocumentacion[]):\n<color:#1e7a3c>CambioEstadoDocumentacion
     loop mientras haya cambios de estado
       EA -[#1e7a3c]> CED : <color:#1e7a3c>sosActual(): Boolean
     end
+    deactivate EA
     EA -[#1e7a3c]> ACED : <color:#1e7a3c>setFechaHoraFin(fechaHora: DateTime): void
-    EA -[#1e7a3c]> EA : <color:#1e7a3c>crearProximoEstado(): EstadoDocumentacion
+    EA -[#1e7a3c]> EA ++ : <color:#1e7a3c>crearProximoEstado(): EstadoDocumentacion
     create entity "nuevoEstado:\nRecibidoYAceptado" as NE #d5efd9
-    EA -[#1e7a3c]> NE : <color:#1e7a3c><<create>> new(): RecibidoYAceptado
-    EA -[#1e7a3c]> EA : <color:#1e7a3c>crearCambioEstado(fechaHora: DateTime, nuevoEstado: EstadoDocumentacion,\n<color:#1e7a3c>empleado: Empleado): CambioEstadoDocumentacion
+    EA -[#1e7a3c]-> NE : <color:#1e7a3c><<create>> new(): RecibidoYAceptado
+    deactivate EA
+    EA -[#1e7a3c]> EA ++ : <color:#1e7a3c>crearCambioEstado(fechaHora: DateTime, nuevoEstado: EstadoDocumentacion,\n<color:#1e7a3c>empleado: Empleado): CambioEstadoDocumentacion
     create entity "nuevoCE:\nCambioEstado\nDocumentacion" as NCE
-    EA -[#1e7a3c]> NCE : <color:#1e7a3c><<create>> new(fechaHora: DateTime, nuevoEstado: EstadoDocumentacion,\n<color:#1e7a3c>empleado: Empleado): CambioEstadoDocumentacion
+    EA -[#1e7a3c]-> NCE : <color:#1e7a3c><<create>> new(fechaHora: DateTime, nuevoEstado: EstadoDocumentacion,\n<color:#1e7a3c>empleado: Empleado): CambioEstadoDocumentacion
+    deactivate EA
     EA -[#1e7a3c]> D : <color:#1e7a3c>agregarCambioEstado(nuevoCE: CambioEstadoDocumentacion): void
     EA -[#1e7a3c]> D : <color:#1e7a3c>setEstado(nuevoEstado: EstadoDocumentacion): void
-    note left of D
-      **(3)** El estado concreto define la transición:
-      cierra el cambio de estado actual, crea el
-      estado siguiente y el nuevo cambio de estado
-      con el empleado responsable, y se los setea
-      a la Documentación.
+    note right of EA
+      (3) El estado concreto define la transición: busca el
+      cambio de estado actual (buscarCEActual), lo cierra con
+      setFechaHoraFin, crea el estado siguiente
+      (crearProximoEstado -> RecibidoYAceptado) y el nuevo
+      CambioEstadoDocumentacion con el empleado responsable
+      (crearCambioEstado), y se los setea a la Documentación.
     end note
+    deactivate EA
   end
 end
+deactivate G
 
-== Fin del tramo rediseñado: sigue tal cual el análisis ==
+== (4) Fin del tramo rediseñado: sigue tal cual el análisis ==
 
 G -> G : notificarRegistrarRecepcionCMOrigen()
-participant "CU 29 Notificar\nRecepción de Bolsín" as CU29 #eaf2fb
+create participant "CU 29 Notificar\nRecepción de Bolsín" as CU29 #eaf2fb
 G -> CU29 : <<include>>
 G -> G : finCU()
 @enduml
