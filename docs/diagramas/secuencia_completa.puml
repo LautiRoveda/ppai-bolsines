@@ -1,0 +1,176 @@
+@startuml
+hide footbox
+skinparam shadowing false
+skinparam defaultFontName "Liberation Sans"
+skinparam defaultFontSize 11
+skinparam sequenceMessageAlign center
+skinparam ParticipantPadding 6
+skinparam BoxPadding 4
+skinparam sequence {
+  ArrowColor #444444
+  LifeLineBorderColor #7da7d9
+  LifeLineBackgroundColor #ffffff
+  GroupBorderColor #5b8fd0
+  GroupHeaderFontColor #1f4e79
+  GroupBodyBackgroundColor transparent
+  DividerBackgroundColor #eaf3ea
+  DividerBorderColor #1e7a3c
+  DividerFontColor #1e7a3c
+}
+skinparam ActorBackgroundColor #dbe7f7
+skinparam ActorBorderColor #2f5fa5
+skinparam BoundaryBackgroundColor #dbe7f7
+skinparam BoundaryBorderColor #2f5fa5
+skinparam ControlBackgroundColor #dbe7f7
+skinparam ControlBorderColor #2f5fa5
+skinparam EntityBackgroundColor #dbe7f7
+skinparam EntityBorderColor #2f5fa5
+skinparam ParticipantBackgroundColor #eaf2fb
+skinparam ParticipantBorderColor #2f5fa5
+skinparam NoteBackgroundColor #fff8dc
+skinparam NoteBorderColor #b59b3a
+skinparam NoteFontSize 10
+mainframe **sd** CU 28 Registrar Recepción de Bolsín - Secuencia completa con patrón State
+
+actor "encargado de Bolsin" as EB
+boundary ":PantallaRegistrar\nRecepcion" as P
+control ":GestorRegistrar\nRecepcion" as G
+entity "sesion:\nSesion" as S
+entity "usuario:\nUsuario" as U
+entity "empleado:\nEmpleado" as E
+entity "bolsin:\nBolsin" as B
+entity "comisionMedica:\nComisionMedica" as CM
+entity "cambioEstadoBolsin:\nCambioEstadoBolsin" as CEB
+entity "actual:\nCambioEstadoBolsin" as ACEB
+entity "estado:\nEstado" as EST
+entity "bolsinSelec:\nBolsin" as BS
+entity "remito:\nRemito" as R
+entity "detalleRemito:\nDetalleRemito" as DR
+entity "documentacion:\nDocumentacion" as D
+entity "tipoDocumento:\nTipoDocumento" as TD
+entity "estadoActual:\nEnBolsinEnviado" as EA #d5efd9
+entity "cambioEstado:\nCambioEstado\nDocumentacion" as CED
+entity "actual:\nCambioEstado\nDocumentacion" as ACED
+
+EB -> P : <<create>> new()
+P -> G : <<create>> new()
+G -> G : buscarCmEmpleado()
+G -> S : getUsuarioLogueado()
+S -> U : getEmpleado()
+G -> E : getCM()
+E -> CM : getNombre()
+G -> P : mostrarCmEmpleado()
+G -> G : buscarBolsinesEnviados()
+loop mientras haya bolsines
+  G -> B : esTuCM()
+  B -> CM : esTuCmDestino()
+  B -> CEB : *sosActual()
+  G -> B : sosEnviado()
+  B -> ACEB : sosEnviado()
+  ACEB -> EST : sosEnviado()
+end
+G -> G : mostrarBolsinEncontrado()
+loop mientras haya bolsines enviados
+  G -> B : getCmOrigen()
+  G -> B : getNroPrecinto()
+end
+G -> P : mostrarCmOrigen()
+G -> P : mostrarNroPrecinto()
+G -> P : solicitarSeleccionarBolsin()
+EB -> P : seleccionarBolsin()
+P -> G : tomarSeleccionBolsin()
+G -> G : mostrarBolsinSeleccionado()
+G -> BS : getDatosBolsin()
+loop mientras haya remitos
+  BS -> R : getNumero()
+  BS -> R : getTipoDocumentacion()
+  loop mientras haya detalles de remito
+    R -> DR : getTipoDocumentacion()
+    DR -> D : getTipoDocumentacion()
+    D -> TD : getNombre()
+    DR -> D : getAsunto()
+  end
+end
+G -> P : mostrarDatosBolsin()
+G -> P : solicitarSeleccionarOpcionRecepcion()
+EB -> P : opcionSeleccionada()
+P -> G : tomarOpcionSeleccionada()
+G -> P : solicitarConfirmacion()
+EB -> P : confirmacionSeleccion()
+P -> G : tomarConfirmacion()
+G -> G : actualizarBolsinRecibido()
+loop mientras haya estados
+  G -> EST : sosAmbitoBolsin()
+  G -> EST : esRecibidoCmDestino()
+end
+loop mientras haya estados
+  G -> EST : sosAmbitoRemito()
+  G -> EST : esRecibidoYAceptado()
+end
+note over G, EST #fde7e5
+  **(1) ELIMINADO respecto del análisis:** el tercer loop [mientras haya estados] con
+  esAmbitoDocumentacion() y esRecibidaYAceptada(), y el atributo estadoRecibidaYAceptada del gestor.
+  Con el patrón State el gestor ya no busca el estado de la documentación.
+end note
+G -> G : getFechaActual()
+G -> G : registrarCambioEstadoBolsin()
+G -> BS : actualizarRecibido()
+BS -> BS : buscarCEActual()
+BS -> CEB : *sosActual()
+BS -> ACEB : setFechaHoraFin()
+BS -> BS : crearCEBolsin()
+create entity "nuevo:\nCambioEstadoBolsin" as NCEB
+BS -> NCEB : <<create>> new()
+G -> G : registrarEstadoRemito()
+G -> BS : actualizarRecibidoYAceptado()
+loop mientras haya remitos
+  BS -> R : actualizarRecibidoYAceptado()
+  R -> R : setEstadoRecibidoYAceptado()
+end
+
+== Tramo rediseñado con el patrón State (vista dinámica del diseño) ==
+
+G -> G : registrarCambioEstadoDocumentacion(): void
+G -[#1e7a3c]> BS : <color:#1e7a3c>aceptarDocumentacion(fechaHoraActual: DateTime, empleadoLog: Empleado): void
+loop mientras haya remitos
+  BS -[#1e7a3c]> R : <color:#1e7a3c>aceptarDocumentacion(fechaHora: DateTime,\n<color:#1e7a3c>empleado: Empleado): void
+  loop mientras haya detalles de remito
+    R -[#1e7a3c]> DR : <color:#1e7a3c>aceptarDocumentacion(fechaHora: DateTime,\n<color:#1e7a3c>empleado: Empleado): void
+    DR -[#1e7a3c]> D : <color:#1e7a3c>aceptarDocumentacion(fechaHora: DateTime,\n<color:#1e7a3c>empleado: Empleado): void
+    D -[#1e7a3c]> EA : <color:#1e7a3c>aceptarDocumentacion(this: Documentacion,\n<color:#1e7a3c>fechaHora: DateTime, empleado: Empleado,\n<color:#1e7a3c>cambioEstado: CambioEstadoDocumentacion[]): void
+    note left of D
+      **(2) Delegación:** la Documentación no decide
+      la transición, se la pide a su estado actual
+      pasándose a sí misma (this) y su colección
+      cambioEstado.
+    end note
+    EA -[#1e7a3c]> EA : <color:#1e7a3c>buscarCEActual(cambioEstado: CambioEstadoDocumentacion[]):\n<color:#1e7a3c>CambioEstadoDocumentacion
+    loop mientras haya cambios de estado
+      EA -[#1e7a3c]> CED : <color:#1e7a3c>sosActual(): Boolean
+    end
+    EA -[#1e7a3c]> ACED : <color:#1e7a3c>setFechaHoraFin(fechaHora: DateTime): void
+    EA -[#1e7a3c]> EA : <color:#1e7a3c>crearProximoEstado(): EstadoDocumentacion
+    create entity "nuevoEstado:\nRecibidoYAceptado" as NE #d5efd9
+    EA -[#1e7a3c]> NE : <color:#1e7a3c><<create>> new(): RecibidoYAceptado
+    EA -[#1e7a3c]> EA : <color:#1e7a3c>crearCambioEstado(fechaHora: DateTime, nuevoEstado: EstadoDocumentacion,\n<color:#1e7a3c>empleado: Empleado): CambioEstadoDocumentacion
+    create entity "nuevoCE:\nCambioEstado\nDocumentacion" as NCE
+    EA -[#1e7a3c]> NCE : <color:#1e7a3c><<create>> new(fechaHora: DateTime, nuevoEstado: EstadoDocumentacion,\n<color:#1e7a3c>empleado: Empleado): CambioEstadoDocumentacion
+    EA -[#1e7a3c]> D : <color:#1e7a3c>agregarCambioEstado(nuevoCE: CambioEstadoDocumentacion): void
+    EA -[#1e7a3c]> D : <color:#1e7a3c>setEstado(nuevoEstado: EstadoDocumentacion): void
+    note left of D
+      **(3)** El estado concreto define la transición:
+      cierra el cambio de estado actual, crea el
+      estado siguiente y el nuevo cambio de estado
+      con el empleado responsable, y se los setea
+      a la Documentación.
+    end note
+  end
+end
+
+== Fin del tramo rediseñado: sigue tal cual el análisis ==
+
+G -> G : notificarRegistrarRecepcionCMOrigen()
+participant "CU 29 Notificar\nRecepción de Bolsín" as CU29 #eaf2fb
+G -> CU29 : <<include>>
+G -> G : finCU()
+@enduml
